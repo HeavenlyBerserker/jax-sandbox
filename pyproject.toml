@@ -1,0 +1,201 @@
+[project]
+name = "lizard"
+version = "0.1.0"
+description = "."
+keywords = ["reinforcement", "machine", "learning", "distributed", "production"]
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    # Do not use, use [tool.pixi.pypi-dependencies] instead.
+]
+
+[dependency-groups]
+# Do not use, prefer pixi features and environments.
+
+[project.scripts]
+train_enc_dec = "lizard.bin.train_enc_dec:main"
+lizard = "lizard.main:main"
+
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[tool.hatch.build.targets.sdist]
+# https://hatch.pypa.io/1.13/config/build/#generic
+only-include = ["src"]
+
+[tool.hatch.build.targets.wheel]
+# https://hatch.pypa.io/1.13/config/build/#packages
+packages = [
+    "src/lizard", # Necessary because the package name is different from the parent directory name.
+]
+# https://hatch.pypa.io/1.13/config/build/#excluding-files-outside-packages
+# only-packages = true # Enabling this causes "No module named 'lizard'"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+include = [
+    "pyproject.toml",
+    "src/**/*.py",
+    "tools/**/*.py",
+]
+
+[tool.ruff.lint]
+ignore = [
+    "D100", # Missing docstring in public module
+    "D101", # Missing docstring in public class
+    "D102", # Missing docstring in public method
+    "D103", # Missing docstring in public function
+    "D104", # Missing docstring in public package
+    "D105", # Missing docstring in magic method
+    "D106", # Missing docstring in public nested class
+    "D107", # Missing docstring in __init__
+    "SIM108", # Use the ternary operator
+]
+select = [
+    "A",   # flake8-builtins
+    "B",   # flake8-bugbear
+    "D",   # pydocstyle https://www.pydocstyle.org/en/stable/error_codes.html
+    "E",   # pycodestyle
+    "F",   # Pyflakes
+    "I",   # isort
+    "PT",  # flake8-pytest-style
+    "SIM", # flake8-simplify
+    "UP",  # pyupgrade
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"test_*.py" = ["D"]
+"*.ipynb" = ["D"]
+
+[tool.pyright]
+typeCheckingMode = "standard"
+include = ["src", "tools"]
+exclude = [
+    "**/__pycache__"
+]
+reportPrivateImportUsage = "none" # some libraries do not properly re-export their types, see https://github.com/microsoft/pyright/issues/2639
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
+filterwarnings = [
+    # Please only ignore warnings that come from a transitive dependency that we
+    # can't easily avoid.See
+    # https://docs.pytest.org/en/stable/how-to/capture-warnings.html#controlling-warnings
+    #
+    # action:message:category:module:line
+    # "error",
+    "ignore:Your system is avx2 capable but pygame was not built with support for it:RuntimeWarning",
+    "ignore:Deprecated call to `pkg_resources.declare_namespace\\('google'\\)`.*:DeprecationWarning",
+    "ignore:Type .* uses PyType_Spec with a metaclass that has custom tp_new:DeprecationWarning",
+    "ignore:::mlflow",
+    "ignore:::_pytest",
+    "ignore:::pydantic",
+    "ignore:::pygame",
+]
+
+[tool.pixi.project]
+channels = [
+  "nvidia",
+  "conda-forge",
+  "https://repo.prefix.dev/obelisk",
+  #"file:///home/ubuntu/minetest/output",
+  "pytorch",
+]
+platforms = ["linux-64"]
+
+[tool.pixi.pypi-dependencies]
+lizard = { path = ".", editable = true }
+# Prefer conda packages over pypi dependencies, see [tool.pixi.dependencies]
+hopfield-layers = { git = "https://github.com/ml-jku/hopfield-layers", rev = "f56f929c95b77a070ae675ea4f56b6d54d36e730" }
+minigrid = "*"
+elements = "*"
+portal = "*"
+chex = "*"
+einops = "*"
+optax = "*"
+crafter = "*"
+ninjax = "*"
+scope = "*"
+ale-py = "==0.9.0"
+h5py = "==3.11.0"
+huggingface-hub = "==0.17.2"
+torcheval = "==0.0.7"
+wandb = "==0.17.0"
+equinox = "*"
+
+[tool.pixi.feature.dev.pypi-dependencies]
+pyright = ">=1.1.393"
+ruff = "*"
+pytest = ">=7.3.1,<8"
+pytest-timeout = ">=2.1.0,<3"
+pytest-coverage = "*"
+importlib_resources = ">=6.2.0,<7"
+
+[tool.pixi.environments]
+# The default environment is dev-cuda because we expect a GPU to be present on
+# the machine where code is developed and executed. This can be changed to
+# dev-cpu if that is more common.
+default = { features = ["dev", "cuda"], solve-group = "cuda" }
+dev-cpu = { features = ["dev", "cpu"], solve-group = "cpu" }
+prod-cuda = { features = ["cuda"], solve-group = "cuda" }
+prod-cpu = { features = ["cpu"], solve-group = "cpu" }
+
+[tool.pixi.tasks]
+
+[tool.pixi.dependencies]
+ffmpeg = ">=7.1.0,<8"
+GPUtil = "*"
+gymnasium = ">=0.29,<0.30"
+hydra-core = ">=1.3.2,<1.4"
+ipykernel = ">=6.29.5,<6.30"
+jax = ">=0.4.28,<0.4.29"                                      # 0.4.28 due to https://github.com/conda-forge/jaxlib-feedstock/issues/277
+jax-dataclasses = ">=1.6.1,<1.7"
+lightning = ">=2.0"
+lightning-utilities = "<=0.9"
+minetest-boad = ">=0.15.1,<0.16"
+minetest-globo = { version = ">=0.4.3,<0.5", channel = "https://repo.prefix.dev/obelisk" }
+minetest-gymnasium = "==0.31.1"
+mlflow = "*"
+moderngl = "*"
+moviepy = ">=1.0.3"
+py-opencv = ">=4.8.0,<5"
+pygame = ">=2.1.3"
+pyrr = "*"
+python-dotenv = ">=1.0.0"
+pytorch = { version = ">=2.4.0,<2.5.0", channel = "pytorch" }
+pyvirtualdisplay = "*"
+rich = ">=13.5"
+scikit-image = "*"
+tensorboard = ">=2.10"
+toml = "*"
+torchmetrics = ">=1.6.1,<2"
+torchvision = { version = ">=0.19.0,<0.20", channel = "pytorch" }
+einops = "*"
+
+
+[tool.pixi.feature.cpu.dependencies]
+cpuonly = { version = "*", channel = "pytorch" } # acts like some sort of marker for pytorch deps.
+
+[tool.pixi.feature.cuda]
+platforms = ["linux-64"]
+system-requirements = { cuda = "12.4" }
+
+[tool.pixi.feature.cuda.dependencies]
+cuda = ">=12.4"
+pytorch-cuda = { version = "=12.4", channel = "pytorch" } # acts like some sort of marker for pytorch deps.
+cudnn = { version = "*", channel = "conda-forge" }
+
+[tool.pixi.feature.cuda.target.linux-64.dependencies]
+# jaxlib requires a newer version than what is available in nvidia channel
+cudnn = { version = "*", channel = "conda-forge" }
+jaxlib = { version = ">=0.4.28,<0.4.29", build = "*cuda12*" }
