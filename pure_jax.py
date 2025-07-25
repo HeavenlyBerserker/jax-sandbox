@@ -1,6 +1,7 @@
 """
 JAX Neural Network Implementation for MNIST Classification
 
+From https://docs.kidger.site/equinox/examples/mnist/
 This script implements a fully-connected neural network using JAX for automatic
 differentiation and optimization. The network is trained on the MNIST dataset
 to classify handwritten digits.
